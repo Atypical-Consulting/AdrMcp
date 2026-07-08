@@ -14,5 +14,7 @@ obj/
 *.coverage
 coverage*.json
 
-## NuGet
+## Release artifacts
 *.nupkg
+nupkg/
+*.mcpb

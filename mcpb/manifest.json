@@ -1,0 +1,66 @@
+{
+  "manifest_version": "0.3",
+  "name": "adr-mcp",
+  "display_name": "AdrMcp",
+  "version": "0.1.0",
+  "description": "Architectural Decision Records over MCP — search, author, validate, link, and trace decisions on disk.",
+  "long_description": "AdrMcp turns a folder of Markdown Architectural Decision Records (MADR 4.0) into live tools any MCP client can use: list and search decisions, draft new ones from a template, validate structure and links, supersede a decision while preserving its history, detect conflicts and stale decisions, and export a browsable index. Every mutating tool is preview-by-default — it returns a diff before anything touches disk.\n\nRequires the **.NET 10 SDK** on your machine: this bundle launches the server on demand with `dnx` (the SDK's NuGet tool runner). Nothing is pre-installed — `dnx` fetches and caches the `AdrMcp` NuGet package on first use.",
+  "author": {
+    "name": "Philippe Matray",
+    "url": "https://github.com/phmatray/AdrMcp"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/phmatray/AdrMcp"
+  },
+  "homepage": "https://phmatray.github.io/AdrMcp/",
+  "documentation": "https://phmatray.github.io/AdrMcp/",
+  "support": "https://github.com/phmatray/AdrMcp/issues",
+  "license": "MIT",
+  "keywords": [
+    "mcp",
+    "adr",
+    "architecture",
+    "decision-records",
+    "madr",
+    "dotnet"
+  ],
+  "server": {
+    "type": "binary",
+    "entry_point": "dnx",
+    "mcp_config": {
+      "command": "dnx",
+      "args": [
+        "AdrMcp",
+        "--yes"
+      ]
+    }
+  },
+  "tools": [
+    { "name": "list_adrs", "description": "List and filter ADRs by status, tag, or date range." },
+    { "name": "get_adr", "description": "Get a single ADR by id or slug, optionally only selected sections." },
+    { "name": "search_adrs", "description": "Search ADRs — lexical by default, semantic term-vector ranking on request." },
+    { "name": "get_adr_index", "description": "The decision log: every ADR as a timeline entry." },
+    { "name": "find_related_adrs", "description": "Incoming/outgoing links and the supersession chain for an ADR." },
+    { "name": "get_adr_graph", "description": "The full ADR relationship graph (nodes and typed edges)." },
+    { "name": "create_adr", "description": "Create an ADR from a MADR or Nygard template; preview-only by default." },
+    { "name": "update_adr", "description": "Replace or append a single section of an ADR; preview-only by default." },
+    { "name": "set_status", "description": "Transition an ADR's status, enforcing the lifecycle." },
+    { "name": "supersede_adr", "description": "Create a replacement ADR, mark the old one superseded, and link both — in one call." },
+    { "name": "link_adrs", "description": "Create a typed link (supersedes/relates-to/conflicts-with) between two ADRs." },
+    { "name": "validate_adr", "description": "Validate ADR structure, status, and link integrity." },
+    { "name": "detect_conflicts", "description": "Find conflicting or overlapping decisions." },
+    { "name": "find_stale_adrs", "description": "ADRs whose code references no longer resolve." },
+    { "name": "coverage_report", "description": "ADR coverage per architectural area; surfaces decision gaps." },
+    { "name": "suggest_adr_from_change", "description": "Draft an ADR proposal from a unified diff." },
+    { "name": "render_index", "description": "Regenerate the browsable decision index (README)." },
+    { "name": "diff_adr", "description": "Diff two ADRs, or an ADR file against its canonical rendering." }
+  ],
+  "compatibility": {
+    "platforms": [
+      "darwin",
+      "win32",
+      "linux"
+    ]
+  }
+}

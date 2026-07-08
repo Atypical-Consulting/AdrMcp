@@ -1,0 +1,22 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.phmatray/adr-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for Architectural Decision Records (ADRs): navigate, author, validate, link, and analyze decisions on disk.",
+  "title": "AdrMcp",
+  "websiteUrl": "https://phmatray.github.io/AdrMcp/",
+  "packages": [
+    {
+      "registryType": "nuget",
+      "identifier": "AdrMcp",
+      "version": "0.1.0",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ],
+  "repository": {
+    "url": "https://github.com/phmatray/AdrMcp",
+    "source": "github"
+  }
+}

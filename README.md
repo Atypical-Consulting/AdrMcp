@@ -1,5 +1,7 @@
 # AdrMcp
 
+<!-- mcp-name: io.github.phmatray/adr-mcp -->
+
 An [MCP](https://modelcontextprotocol.io) server for **Architectural Decision Records (ADRs)**.
 It turns a folder of markdown ADRs into first-class, queryable, writable capabilities for any
 MCP client (Claude Code, Cursor, Copilot, …): navigate, author, validate, and analyze decisions.
