@@ -1,0 +1,59 @@
+name: Deploy site
+
+# Publishes the static landing page in site/ to GitHub Pages.
+# One-time setup: repository Settings → Pages → Source = "GitHub Actions".
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'site/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one concurrent deployment; don't cancel an in-progress one.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/configure-pages@v5
+      # The site is fully static (inline CSS/JS), so there is nothing to build —
+      # upload the folder as-is.
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.d3.outputs.page_url || steps.d2.outputs.page_url || steps.d1.outputs.page_url }}
+    steps:
+      # GitHub Pages' deployment API intermittently returns "Deployment failed, try again
+      # later" — a backend hiccup unrelated to the build that clears on a plain re-run. Try
+      # up to 3 times; the first two tolerate failure so a transient miss doesn't fail the
+      # job, and only the last attempt can fail it.
+      - name: Deploy to GitHub Pages (attempt 1)
+        id: d1
+        continue-on-error: true
+        uses: actions/deploy-pages@v5
+      - name: Deploy to GitHub Pages (attempt 2)
+        id: d2
+        if: steps.d1.outcome == 'failure'
+        continue-on-error: true
+        uses: actions/deploy-pages@v5
+      - name: Deploy to GitHub Pages (attempt 3)
+        id: d3
+        if: steps.d1.outcome == 'failure' && steps.d2.outcome == 'failure'
+        uses: actions/deploy-pages@v5
