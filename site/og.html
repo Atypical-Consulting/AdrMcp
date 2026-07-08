@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink:#0b1622; --ink-2:#0e1d2e; --panel:#13263c; --line:#244567; --line-soft:#1a3450;
+    --paper:#e9f1fb; --muted:#90a7c4; --muted-2:#6f88a6; --stamp:#f4b942;
+    --fd:'Space Grotesk','Segoe UI',system-ui,sans-serif; --fm:'JetBrains Mono',ui-monospace,monospace;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; width:1200px; height:630px; overflow:hidden; background:#000; }
+
+  .og {
+    position:relative; width:1200px; height:630px; overflow:hidden;
+    background-color:var(--ink);
+    background-image:linear-gradient(var(--line-soft) 1px,transparent 1px),linear-gradient(90deg,var(--line-soft) 1px,transparent 1px);
+    background-size:46px 46px;
+    color:var(--paper); font-family:var(--fd);
+  }
+  .og::before {
+    content:""; position:absolute; inset:0;
+    background:radial-gradient(90% 80% at 82% -10%,rgba(244,185,66,.14),transparent 55%),
+               linear-gradient(180deg,rgba(11,22,34,.72),rgba(11,22,34,.93));
+  }
+  .frame { position:absolute; inset:0; z-index:1; display:flex; align-items:center; gap:54px; padding:56px 70px; }
+  .left { flex:1.12; align-self:stretch; display:flex; flex-direction:column; justify-content:center; }
+  .eyebrow { font-family:var(--fm); font-size:19px; letter-spacing:.24em; text-transform:uppercase; color:var(--stamp); display:flex; align-items:center; gap:14px; margin-bottom:24px; }
+  .eyebrow::before { content:""; width:34px; height:2px; background:var(--stamp); opacity:.8; }
+  h1 { margin:0; font-size:67px; line-height:1.03; letter-spacing:-.035em; font-weight:700; }
+  h1 .accent { color:var(--stamp); }
+  .sub { margin-top:24px; font-size:24px; line-height:1.4; color:var(--muted); max-width:27ch; }
+
+  .brand { position:absolute; left:70px; bottom:44px; z-index:2; display:flex; align-items:center; gap:15px; }
+  .mark { width:44px; height:44px; border-radius:11px; border:2.5px solid var(--stamp); display:grid; place-items:center; font-family:var(--fm); font-size:13px; font-weight:700; color:var(--stamp); }
+  .brand b { font-size:25px; letter-spacing:-.01em; }
+  .brand span { font-family:var(--fm); font-size:17px; color:var(--muted-2); }
+
+  .right { flex:.88; display:flex; justify-content:center; }
+  .record { position:relative; width:100%; background:linear-gradient(160deg,var(--panel),var(--ink-2)); border:1px solid var(--line); border-radius:18px; padding:30px 30px 26px; box-shadow:0 40px 70px -30px rgba(0,0,0,.85); }
+  .stamp { position:absolute; top:-20px; right:26px; font-family:var(--fm); font-weight:700; font-size:16px; letter-spacing:.18em; color:var(--stamp); border:2.5px solid var(--stamp); border-radius:9px; padding:8px 13px; background:rgba(244,185,66,.08); box-shadow:inset 0 0 0 2px rgba(244,185,66,.22); transform:rotate(-7deg); }
+  .fm { font-family:var(--fm); font-size:17px; line-height:2.05; }
+  .fm .k { color:var(--muted-2); } .fm .v { color:var(--paper); }
+  .chip { display:inline-block; font-family:var(--fm); font-size:14px; padding:2px 11px; border-radius:999px; border:1px solid var(--line); color:var(--muted); margin-right:6px; }
+  .rule { height:1px; background:var(--line-soft); margin:15px 0; }
+  .rtitle { font-size:23px; font-weight:700; letter-spacing:-.01em; margin:4px 0 14px; }
+  .sec { font-family:var(--fm); font-size:16px; color:var(--muted); padding-left:22px; position:relative; line-height:1.95; }
+  .sec::before { content:"##"; position:absolute; left:0; color:#d99a1c; }
+</style>
+</head>
+<body>
+  <div class="og" id="og">
+    <div class="frame">
+      <div class="left">
+        <div class="eyebrow">MCP Server · .NET 10 · ADR</div>
+        <h1>Every architectural decision, <span class="accent">on the record.</span></h1>
+        <div class="sub">Search, author, validate &amp; trace decision records — from your AI agent.</div>
+      </div>
+      <div class="right">
+        <div class="record">
+          <div class="stamp">ACCEPTED</div>
+          <div class="fm">
+            <div><span class="k">id:</span> <span class="v">0007</span></div>
+            <div><span class="k">tags:</span> <span class="chip">data</span><span class="chip">storage</span></div>
+            <div><span class="k">links:</span> <span class="v">supersedes → 0003</span></div>
+          </div>
+          <div class="rule"></div>
+          <div class="rtitle">Use PostgreSQL for persistence</div>
+          <div class="sec">Context and Problem Statement</div>
+          <div class="sec">Decision Outcome</div>
+          <div class="sec">Consequences</div>
+        </div>
+      </div>
+    </div>
+    <div class="brand">
+      <span class="mark">ADR</span>
+      <b>AdrMcp</b>
+      <span>· atypical-consulting.github.io/AdrMcp</span>
+    </div>
+  </div>
+</body>
+</html>

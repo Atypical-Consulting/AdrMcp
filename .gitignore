@@ -18,3 +18,6 @@ coverage*.json
 *.nupkg
 nupkg/
 *.mcpb
+
+## Local-only git hooks (personal machine convention, not imposed on contributors)
+.githooks/

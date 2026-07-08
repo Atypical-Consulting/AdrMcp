@@ -80,17 +80,3 @@ dotnet test AdrMcp.slnx
 ```
 
 CI gates merges at **80% line coverage**. Keep new code covered.
-
-## Commit attribution policy
-
-**Every commit MUST be authored by `phmatray@gmail.com`.** This is enforced by
-a tracked pre-commit hook at `.githooks/pre-commit`. After cloning, enable the
-hook and set your author email (repo-local):
-
-```bash
-git config core.hooksPath .githooks
-git config user.email phmatray@gmail.com
-```
-
-A commit whose author email is not `phmatray@gmail.com` will be rejected by the
-hook with instructions to fix it.

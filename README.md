@@ -2,13 +2,40 @@
 
 <!-- mcp-name: io.github.Atypical-Consulting/adr-mcp -->
 
-An [MCP](https://modelcontextprotocol.io) server for **Architectural Decision Records (ADRs)**.
-It turns a folder of markdown ADRs into first-class, queryable, writable capabilities for any
-MCP client (Claude Code, Cursor, Copilot, …): navigate, author, validate, and analyze decisions.
+**Every architectural decision, on the record** — an MCP server that turns a folder of Markdown
+ADRs into live tools your AI agent can use: search, author, validate, link, and trace decisions.
 
-Built as a .NET 10 / C# stdio MCP server, architecturally modeled on
-[RoselineMCP](https://github.com/Atypical-Consulting/RoselineMCP) — layered `Tools → Services`,
-`[McpServerTool]` attributes, preview-by-default writes, shipped as a `dotnet tool` + Docker image.
+[![CI](https://github.com/Atypical-Consulting/AdrMcp/actions/workflows/ci.yml/badge.svg)](https://github.com/Atypical-Consulting/AdrMcp/actions/workflows/ci.yml)
+[![NuGet](https://img.shields.io/nuget/v/AdrMcp.svg)](https://www.nuget.org/packages/AdrMcp)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+![.NET 10](https://img.shields.io/badge/.NET-10-512BD4)
+![MCP server](https://img.shields.io/badge/MCP-server-f4b942)
+
+🌐 **[atypical-consulting.github.io/AdrMcp](https://atypical-consulting.github.io/AdrMcp/)**
+
+![AdrMcp — Every architectural decision, on the record](https://atypical-consulting.github.io/AdrMcp/og.png)
+
+## The problem
+
+Architectural decisions get made in Slack threads, PR comments, and someone's head — then the
+reasoning evaporates. Months later a teammate asks "why is it done this way?", nobody remembers, and
+the decision gets silently re-litigated or accidentally reversed. ADRs fix that — *if* they're
+written and kept honest. But a folder of Markdown files is inert: you can't ask it what's still
+`accepted`, trace what superseded what, or notice a decision that no longer matches the code.
+
+It's worse with AI coding agents: the one collaborator that could keep decisions current has no way
+to read, write, or reason about them.
+
+## The solution
+
+AdrMcp makes that folder a live surface any MCP client can work. It gives your agent tools to list
+and search decisions, draft new ones from a [MADR](https://adr.github.io/madr/) template, validate
+structure and links, **supersede** a decision while preserving its history, and flag stale or
+conflicting ones — all **preview-by-default**, so nothing is written without you seeing the diff.
+
+The records stay plain Markdown in git; AdrMcp adds the tools. Built as a .NET 10 stdio MCP server,
+architecturally modeled on [RoselineMCP](https://github.com/Atypical-Consulting/RoselineMCP) —
+layered `Tools → Services`, `[McpServerTool]` attributes, shipped as a `dotnet tool` + Docker image.
 
 ## Storage & format
 
@@ -146,19 +173,6 @@ CI/CD runs on GitHub Actions, modeled on [RoselineMCP](https://github.com/Atypic
 
 Releases are automated with [release-please](https://github.com/googleapis/release-please): merge the
 release PR it opens to ship. See [PUBLISH.md](PUBLISH.md).
-
-## Commit attribution
-
-Every commit in this repository must be authored by **phmatray@gmail.com**. This is enforced
-by a version-controlled `pre-commit` hook. Git does not run tracked hooks automatically, so
-enable it once per clone:
-
-```bash
-git config core.hooksPath .githooks
-git config user.email phmatray@gmail.com
-```
-
-See [`.githooks/`](.githooks/) for details.
 
 ## Project layout
 

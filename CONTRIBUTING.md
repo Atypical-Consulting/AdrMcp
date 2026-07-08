@@ -15,27 +15,6 @@ By participating in this project, you agree to abide by our
 - Focus on constructive criticism
 - Accept feedback gracefully
 
-## Commit attribution
-
-**Every commit in this repository MUST be authored by `phmatray@gmail.com`.**
-
-This is a hard requirement, enforced by a tracked pre-commit hook in
-`.githooks/pre-commit`. The hook inspects the recorded author identity and
-rejects any commit whose author email is not `phmatray@gmail.com`.
-
-After cloning, you MUST enable the hook and set your author identity:
-
-```bash
-git config core.hooksPath .githooks
-git config user.email phmatray@gmail.com
-```
-
-The first command points Git at the tracked hooks directory so the attribution
-check runs locally before each commit. The second command sets the author email
-that will be recorded. Both are repo-local (`git config`, not `--global`), so
-they only affect this repository. If a commit is rejected, the hook prints the
-offending author and the exact command needed to fix it.
-
 ## Getting Started
 
 ### Prerequisites
@@ -53,10 +32,6 @@ cd AdrMcp
 
 # Add upstream remote
 git remote add upstream https://github.com/Atypical-Consulting/AdrMcp.git
-
-# Enable the commit-attribution hook and set your author email (required)
-git config core.hooksPath .githooks
-git config user.email phmatray@gmail.com
 
 # Restore, build, and test
 dotnet restore AdrMcp.slnx
@@ -96,7 +71,6 @@ dotnet test AdrMcp.slnx
    - Add/update tests as needed
    - Update documentation if applicable
    - Keep commits focused and atomic
-   - Ensure every commit is authored by `phmatray@gmail.com`
 
 3. **Build and test your changes**:
    ```bash
@@ -178,8 +152,7 @@ dependency injection in `Program.cs` and hosted over stdio.
 1. **Before submitting**:
    - Ensure all tests pass and coverage stays at or above 80%
    - Update documentation (README.md, CLAUDE.md, CHANGELOG.md) as needed
-   - Rebase on the latest `main`
-   - Confirm every commit is authored by `phmatray@gmail.com`
+   - Rebase on the latest `dev`
 
 2. **PR description**:
    - Link related issues
