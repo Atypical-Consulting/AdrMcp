@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/configure-pages@v5
+      - uses: actions/configure-pages@v6
       # The site is fully static (inline CSS/JS), so there is nothing to build —
       # upload the folder as-is.
       - uses: actions/upload-pages-artifact@v5
