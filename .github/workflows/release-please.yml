@@ -1,0 +1,171 @@
+name: release-please
+
+# Conventional-Commits-driven releases. On every push to dev, release-please keeps a release PR
+# up to date (bumping Directory.Build.props + CHANGELOG.md). Merging that PR tags vX.Y.Z and
+# creates the GitHub Release; the `release_created` output then gates the publish + docker jobs in
+# THIS same run. A tag-triggered workflow can't do this — a GITHUB_TOKEN-created tag does not fire
+# `on: push: tags`, so the release automation and the publish must live in one workflow.
+
+on:
+  push:
+    branches: [dev]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+# Serialize release-please runs so overlapping pushes can't race on the release PR / tag.
+concurrency:
+  group: release-please
+  cancel-in-progress: false
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      version: ${{ steps.release.outputs.version }}
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          target-branch: dev
+
+  # Pack + publish the tool. Runs only when release-please actually cut a release.
+  publish:
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write   # upload assets to the release
+      id-token: write   # OIDC for the MCP Registry publish
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 'lts/*'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v6
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      # release-please bumped Directory.Build.props (the package version). Stamp the JSON manifests
+      # to the same version here (release-please's generic updater doesn't touch nested JSON paths).
+      - name: Stamp MCP manifest and MCPB bundle to the release version
+        run: |
+          v="${{ needs.release-please.outputs.version }}"
+          jq --arg v "$v" '.version=$v | .packages[0].version=$v' .mcp/server.json > .mcp/server.json.tmp && mv .mcp/server.json.tmp .mcp/server.json
+          jq --arg v "$v" '.version=$v' mcpb/manifest.json > mcpb/manifest.tmp && mv mcpb/manifest.tmp mcpb/manifest.json
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore -c Release
+
+      - name: Pack
+        run: dotnet pack AdrMcp/AdrMcp.csproj -c Release --no-build -o ./nupkg
+
+      - name: Verify packaged MCP manifest
+        run: |
+          want="${{ needs.release-please.outputs.version }}"
+          pkg="$(ls ./nupkg/*.nupkg | head -1)"
+          echo "Inspecting $pkg (expecting version $want)"
+          manifest="$(unzip -p "$pkg" .mcp/server.json 2>/dev/null || true)"
+          [ -n "$manifest" ] || { echo "::error::.mcp/server.json missing from $pkg"; exit 1; }
+          got="$(echo "$manifest" | jq -r '.version')"
+          [ "$got" = "$want" ] || { echo "::error::packaged manifest version $got != $want"; exit 1; }
+          echo "Manifest OK: $want"
+
+      - name: Build MCPB bundle
+        run: npx -y @anthropic-ai/mcpb pack mcpb AdrMcp.mcpb
+
+      - name: Upload release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ needs.release-please.outputs.tag_name }}" ./nupkg/*.nupkg AdrMcp.mcpb --clobber
+
+      - name: Push to NuGet.org
+        run: |
+          dotnet nuget push ./nupkg/*.nupkg \
+            --api-key ${{ secrets.NUGET_API_KEY }} \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate
+
+      # The MCP Registry fetches the package from NuGet to verify ownership (the mcp-name marker in
+      # the packed README), so the version must be indexed and downloadable first.
+      - name: Wait for NuGet to index the version
+        run: |
+          v="${{ needs.release-please.outputs.version }}"
+          url="https://api.nuget.org/v3-flatcontainer/adrmcp/${v}/adrmcp.${v}.nupkg"
+          echo "Waiting for $url …"
+          for i in $(seq 1 40); do
+            code="$(curl -s -o /dev/null -w '%{http_code}' "$url")"
+            [ "$code" = "200" ] && { echo "indexed after ~$((i*30))s"; exit 0; }
+            echo "attempt $i: HTTP $code — waiting 30s"; sleep 30
+          done
+          echo "::error::NuGet did not index $v within 20 min"; exit 1
+
+      - name: Install mcp-publisher
+        run: |
+          curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
+
+      - name: Authenticate to MCP Registry (GitHub OIDC)
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish to MCP Registry
+        run: ./mcp-publisher publish .mcp/server.json
+
+  # Multi-arch container image to GHCR. Also gated on a real release.
+  docker:
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-qemu-action@v4
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ghcr.io/atypical-consulting/adr-mcp
+          tags: |
+            type=raw,value=${{ needs.release-please.outputs.version }}
+            type=raw,value=latest
+
+      - name: Build and push multi-arch image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

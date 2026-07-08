@@ -142,10 +142,10 @@ CI/CD runs on GitHub Actions, modeled on [RoselineMCP](https://github.com/Atypic
 | `ci.yml` | push / PR to `main`/`dev` | Build + test matrix (ubuntu/windows/macos); 80% line-coverage gate on ubuntu |
 | `codeql.yml` | push / PR / weekly | CodeQL security analysis (C#) |
 | `pages.yml` | push to `site/**` on `dev` | Publish the landing page to GitHub Pages |
-| `docker-publish.yml` | `v*` tag | Build + push a multi-arch image to GHCR |
-| `publish-nuget.yml` | `v*` tag | Pack the tool, push to NuGet.org, create a GitHub Release |
+| `release-please.yml` | push to `dev` | Maintain a release PR (Conventional Commits); on merge, publish NuGet + MCPB + MCP Registry + GHCR image |
 
-Cut a release by pushing a tag: `git tag v0.1.0 && git push origin v0.1.0`.
+Releases are automated with [release-please](https://github.com/googleapis/release-please): merge the
+release PR it opens to ship. See [PUBLISH.md](PUBLISH.md).
 
 ## Commit attribution
 
