@@ -25,16 +25,26 @@ publish/docker jobs are skipped).
 `bump-minor-pre-major` is on, so before `1.0.0`: `feat:` → minor, `fix:`/`chore:` → patch,
 `feat!:` / `BREAKING CHANGE` → minor. Write commit subjects accordingly.
 
-## One-time setup
+## One-time setup — NuGet Trusted Publishing
 
-| Secret | Used by | Purpose |
-| --- | --- | --- |
-| `NUGET_API_KEY` | release-please `publish` job | Push the package to NuGet.org (already an org secret) |
+Publishing uses **NuGet Trusted Publishing** (OIDC) — no long-lived API key. Configure it once:
 
-GHCR uses the built-in `GITHUB_TOKEN`; the MCP Registry uses GitHub OIDC — no extra secrets.
-The NuGet API key must be scoped to allow pushing the **`AdrMcp`** package (a glob/owner key, or one
-that includes `AdrMcp`). release-please must be allowed to open PRs: org/repo setting
-**Actions → General → Allow GitHub Actions to create and approve pull requests**.
+1. On [nuget.org](https://www.nuget.org) → your account → **Trusted Publishing** → add a GitHub
+   Actions policy:
+   - **Repository owner:** `Atypical-Consulting`
+   - **Repository:** `AdrMcp`
+   - **Workflow file:** `release-please.yml`
+   - **Environment:** *(leave empty)*
+   - **Package owner / package:** `AdrMcp` (or a glob/pattern owned by your account)
+2. Add a repository (or org) secret **`NUGET_USER`** = your nuget.org username.
+
+The `publish` job's `NuGet/login` step exchanges the GitHub OIDC token (`id-token: write`) for a
+short-lived (~1 h) key. Until `NUGET_USER` is set, the NuGet **and** MCP Registry steps skip
+cleanly — the GitHub Release, `.mcpb` bundle, and GHCR image are still produced.
+
+GHCR uses the built-in `GITHUB_TOKEN`; the MCP Registry uses GitHub OIDC — no other secrets.
+release-please must be allowed to open PRs: **Actions → General → Allow GitHub Actions to create
+and approve pull requests**.
 
 ## Install channels
 

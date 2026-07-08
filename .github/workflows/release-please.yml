@@ -42,7 +42,11 @@ jobs:
     timeout-minutes: 20
     permissions:
       contents: write   # upload assets to the release
-      id-token: write   # OIDC for the MCP Registry publish
+      id-token: write   # OIDC for NuGet Trusted Publishing + the MCP Registry publish
+    # Job-level so each publish step's `if` can read it. Empty until the NUGET_USER secret is set,
+    # in which case the NuGet + MCP Registry steps skip cleanly (release assets are still attached).
+    env:
+      NUGET_USER: ${{ secrets.NUGET_USER }}
     steps:
       - uses: actions/checkout@v7
 
@@ -98,16 +102,29 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: gh release upload "${{ needs.release-please.outputs.tag_name }}" ./nupkg/*.nupkg AdrMcp.mcpb --clobber
 
+      # NuGet Trusted Publishing: exchange the GitHub OIDC token for a short-lived (~1h) API key —
+      # no long-lived secret is stored. Requires a trusted-publisher policy on NuGet.org (tied to
+      # this repo + workflow file) and the NUGET_USER secret (your nuget.org username). Both steps
+      # skip cleanly until NUGET_USER is set. Keep login adjacent to the push so the key stays valid.
+      - name: NuGet login (OIDC -> short-lived key)
+        id: nuget-login
+        if: ${{ env.NUGET_USER != '' }}
+        uses: NuGet/login@v1
+        with:
+          user: ${{ env.NUGET_USER }}
+
       - name: Push to NuGet.org
+        if: ${{ env.NUGET_USER != '' }}
         run: |
           dotnet nuget push ./nupkg/*.nupkg \
-            --api-key ${{ secrets.NUGET_API_KEY }} \
+            --api-key ${{ steps.nuget-login.outputs.NUGET_API_KEY }} \
             --source https://api.nuget.org/v3/index.json \
             --skip-duplicate
 
       # The MCP Registry fetches the package from NuGet to verify ownership (the mcp-name marker in
       # the packed README), so the version must be indexed and downloadable first.
       - name: Wait for NuGet to index the version
+        if: ${{ env.NUGET_USER != '' }}
         run: |
           v="${{ needs.release-please.outputs.version }}"
           url="https://api.nuget.org/v3-flatcontainer/adrmcp/${v}/adrmcp.${v}.nupkg"
@@ -120,13 +137,16 @@ jobs:
           echo "::error::NuGet did not index $v within 20 min"; exit 1
 
       - name: Install mcp-publisher
+        if: ${{ env.NUGET_USER != '' }}
         run: |
           curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
 
       - name: Authenticate to MCP Registry (GitHub OIDC)
+        if: ${{ env.NUGET_USER != '' }}
         run: ./mcp-publisher login github-oidc
 
       - name: Publish to MCP Registry
+        if: ${{ env.NUGET_USER != '' }}
         run: ./mcp-publisher publish .mcp/server.json
 
   # Multi-arch container image to GHCR. Also gated on a real release.
