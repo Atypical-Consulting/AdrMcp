@@ -5,7 +5,7 @@ name: Deploy site
 
 on:
   push:
-    branches: [main]
+    branches: [dev]
     paths:
       - 'site/**'
       - '.github/workflows/pages.yml'

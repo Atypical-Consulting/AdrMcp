@@ -62,7 +62,7 @@ an appointed representative at an online or offline event.
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
 reported to the community leaders responsible for enforcement by contacting
 the maintainer at [phmatray@gmail.com](mailto:phmatray@gmail.com), or by
-opening a [private security advisory](https://github.com/phmatray/AdrMcp/security/advisories/new)
+opening a [private security advisory](https://github.com/Atypical-Consulting/AdrMcp/security/advisories/new)
 on this repository. All complaints will be reviewed and investigated promptly
 and fairly.
 

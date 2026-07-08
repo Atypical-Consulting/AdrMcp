@@ -1,6 +1,6 @@
 # AdrMcp
 
-<!-- mcp-name: io.github.phmatray/adr-mcp -->
+<!-- mcp-name: io.github.Atypical-Consulting/adr-mcp -->
 
 An [MCP](https://modelcontextprotocol.io) server for **Architectural Decision Records (ADRs)**.
 It turns a folder of markdown ADRs into first-class, queryable, writable capabilities for any
@@ -139,9 +139,9 @@ CI/CD runs on GitHub Actions, modeled on [RoselineMCP](https://github.com/Atypic
 
 | Workflow | Trigger | What it does |
 | --- | --- | --- |
-| `ci.yml` | push / PR to `main` | Build + test matrix (ubuntu/windows/macos); 80% line-coverage gate on ubuntu |
+| `ci.yml` | push / PR to `main`/`dev` | Build + test matrix (ubuntu/windows/macos); 80% line-coverage gate on ubuntu |
 | `codeql.yml` | push / PR / weekly | CodeQL security analysis (C#) |
-| `pages.yml` | push to `site/**` | Publish the landing page to GitHub Pages |
+| `pages.yml` | push to `site/**` on `dev` | Publish the landing page to GitHub Pages |
 | `docker-publish.yml` | `v*` tag | Build + push a multi-arch image to GHCR |
 | `publish-nuget.yml` | `v*` tag | Pack the tool, push to NuGet.org, create a GitHub Release |
 

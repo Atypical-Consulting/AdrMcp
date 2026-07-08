@@ -146,7 +146,7 @@ jobs:
     needs: publish
     runs-on: ubuntu-latest
     permissions:
-      id-token: write   # OIDC token for `mcp-publisher login github-oidc` (proves io.github.phmatray)
+      id-token: write   # OIDC token for `mcp-publisher login github-oidc` (proves io.github.Atypical-Consulting)
       contents: read
     steps:
       - uses: actions/checkout@v7

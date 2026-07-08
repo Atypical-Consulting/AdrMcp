@@ -6,16 +6,16 @@
   "description": "Architectural Decision Records over MCP — search, author, validate, link, and trace decisions on disk.",
   "long_description": "AdrMcp turns a folder of Markdown Architectural Decision Records (MADR 4.0) into live tools any MCP client can use: list and search decisions, draft new ones from a template, validate structure and links, supersede a decision while preserving its history, detect conflicts and stale decisions, and export a browsable index. Every mutating tool is preview-by-default — it returns a diff before anything touches disk.\n\nRequires the **.NET 10 SDK** on your machine: this bundle launches the server on demand with `dnx` (the SDK's NuGet tool runner). Nothing is pre-installed — `dnx` fetches and caches the `AdrMcp` NuGet package on first use.",
   "author": {
-    "name": "Philippe Matray",
-    "url": "https://github.com/phmatray/AdrMcp"
+    "name": "Atypical Consulting SRL",
+    "url": "https://github.com/Atypical-Consulting/AdrMcp"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/phmatray/AdrMcp"
+    "url": "https://github.com/Atypical-Consulting/AdrMcp"
   },
-  "homepage": "https://phmatray.github.io/AdrMcp/",
-  "documentation": "https://phmatray.github.io/AdrMcp/",
-  "support": "https://github.com/phmatray/AdrMcp/issues",
+  "homepage": "https://atypical-consulting.github.io/AdrMcp/",
+  "documentation": "https://atypical-consulting.github.io/AdrMcp/",
+  "support": "https://github.com/Atypical-Consulting/AdrMcp/issues",
   "license": "MIT",
   "keywords": [
     "mcp",

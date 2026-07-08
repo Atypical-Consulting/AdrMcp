@@ -1,11 +1,11 @@
 blank_issues_enabled: false
 contact_links:
   - name: Security Vulnerability
-    url: https://github.com/phmatray/AdrMcp/security/advisories/new
+    url: https://github.com/Atypical-Consulting/AdrMcp/security/advisories/new
     about: Please report security vulnerabilities privately via GitHub's security advisory tool, not as a public issue. See SECURITY.md for details.
   - name: Questions & Discussions
-    url: https://github.com/phmatray/AdrMcp/discussions
+    url: https://github.com/Atypical-Consulting/AdrMcp/discussions
     about: Have a question or an idea to discuss? Start a discussion instead of opening an issue.
   - name: Contributing Guide
-    url: https://github.com/phmatray/AdrMcp/blob/main/CONTRIBUTING.md
+    url: https://github.com/Atypical-Consulting/AdrMcp/blob/main/CONTRIBUTING.md
     about: Read the contributing guide before opening an issue or pull request.

@@ -15,11 +15,11 @@
     <PackageType>McpServer</PackageType>
     <ToolCommandName>adr-mcp</ToolCommandName>
     <PackageId>AdrMcp</PackageId>
-    <Authors>Philippe Matray</Authors>
+    <Authors>Atypical Consulting SRL</Authors>
     <Description>MCP server for Architectural Decision Records (ADRs): navigate, author, validate, link, and analyze decisions on disk.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/phmatray/AdrMcp</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/phmatray/AdrMcp</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/Atypical-Consulting/AdrMcp</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Atypical-Consulting/AdrMcp</RepositoryUrl>
     <PackageTags>mcp;adr;architecture;decision-records;madr</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
 
@@ -30,7 +30,7 @@
 
     <!-- Docker container support (dotnet publish /t:PublishContainer). -->
     <EnableSdkContainerSupport>true</EnableSdkContainerSupport>
-    <ContainerRepository>phmatray/adr-mcp</ContainerRepository>
+    <ContainerRepository>atypical-consulting/adr-mcp</ContainerRepository>
     <ContainerFamily>alpine</ContainerFamily>
   </PropertyGroup>
 

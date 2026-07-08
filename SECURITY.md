@@ -19,7 +19,7 @@ issues, discussions, or pull requests.**
 Instead, report vulnerabilities privately using GitHub's private
 vulnerability reporting feature:
 
-1. Go to the [Security tab](https://github.com/phmatray/AdrMcp/security) of this repository.
+1. Go to the [Security tab](https://github.com/Atypical-Consulting/AdrMcp/security) of this repository.
 2. Click **"Report a vulnerability"**.
 3. Fill in as much detail as you can, including:
    - A description of the vulnerability and its potential impact

@@ -44,5 +44,5 @@ Initial release.
 - **Commit-attribution hook** (`.githooks/pre-commit`) enforcing that every
   commit is authored by `phmatray@gmail.com`.
 
-[Unreleased]: https://github.com/phmatray/AdrMcp/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/phmatray/AdrMcp/releases/tag/v0.1.0
+[Unreleased]: https://github.com/Atypical-Consulting/AdrMcp/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/Atypical-Consulting/AdrMcp/releases/tag/v0.1.0

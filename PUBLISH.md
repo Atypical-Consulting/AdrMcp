@@ -12,8 +12,8 @@ Repository **Settings → Secrets and variables → Actions**:
 | `NUGET_API_KEY` | `publish-nuget.yml` | Push the package to NuGet.org |
 
 GHCR (Docker) and the MCP Registry use the built-in `GITHUB_TOKEN` / OIDC — no extra secrets.
-The MCP Registry namespace `io.github.phmatray` is proven at publish time via GitHub OIDC, so
-the repository owner must be `phmatray` (or update the name in `.mcp/server.json`).
+The MCP Registry namespace `io.github.Atypical-Consulting` is proven at publish time via GitHub OIDC, so
+the repository owner must be `Atypical-Consulting` (or update the name in `.mcp/server.json`).
 
 ## Cut a release
 
@@ -31,7 +31,7 @@ That triggers, on the `v*` tag:
 - **Publish NuGet** — stamps `.mcp/server.json` to the tag version, builds, tests, packs, verifies
   the manifest is embedded, pushes to NuGet.org, builds the `.mcpb` bundle, creates a GitHub Release
   (with the `.nupkg` and `.mcpb` attached), then publishes the manifest to the MCP Registry.
-- **Docker Publish** — builds and pushes a multi-arch image to `ghcr.io/phmatray/adr-mcp`.
+- **Docker Publish** — builds and pushes a multi-arch image to `ghcr.io/atypical-consulting/adr-mcp`.
 
 ## Install channels
 
@@ -43,5 +43,5 @@ dotnet tool install -g AdrMcp
 dnx AdrMcp --yes
 
 # Docker
-docker run --rm -i -v "$PWD:/workspace" ghcr.io/phmatray/adr-mcp --adr-root /workspace/docs/adr
+docker run --rm -i -v "$PWD:/workspace" ghcr.io/atypical-consulting/adr-mcp --adr-root /workspace/docs/adr
 ```

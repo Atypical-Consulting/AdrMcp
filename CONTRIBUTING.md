@@ -52,7 +52,7 @@ git clone https://github.com/YOUR_USERNAME/AdrMcp.git
 cd AdrMcp
 
 # Add upstream remote
-git remote add upstream https://github.com/phmatray/AdrMcp.git
+git remote add upstream https://github.com/Atypical-Consulting/AdrMcp.git
 
 # Enable the commit-attribution hook and set your author email (required)
 git config core.hooksPath .githooks
