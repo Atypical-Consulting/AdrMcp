@@ -14,11 +14,3 @@
 ### Miscellaneous Chores
 
 * set initial release version to 0.1.0 ([16794c2](https://github.com/Atypical-Consulting/AdrMcp/commit/16794c232abb1b1756f08f584ed2727d803895b1))
-
-## Changelog
-
-All notable changes to this project are documented in this file.
-
-It is managed automatically by [release-please](https://github.com/googleapis/release-please)
-from [Conventional Commits](https://www.conventionalcommits.org/) — new sections are added when a
-release PR is merged, so do not edit released entries by hand.
