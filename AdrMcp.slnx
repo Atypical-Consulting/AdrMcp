@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="AdrMcp.Tests/AdrMcp.Tests.csproj" />
+  <Project Path="AdrMcp/AdrMcp.csproj" />
+</Solution>

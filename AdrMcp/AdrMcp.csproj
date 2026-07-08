@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <!-- Packaged as a .NET global tool: dotnet tool install -g AdrMcp -->
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>adr-mcp</ToolCommandName>
+    <PackageId>AdrMcp</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>AdrMcp</Authors>
+    <Description>An MCP server for Architectural Decision Records (ADRs): navigate, author, validate, and analyze decisions on disk.</Description>
+    <PackageTags>mcp;adr;architecture;decision-records;madr</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DiffPlex" Version="1.9.0" />
+    <PackageReference Include="Markdig" Version="1.3.2" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.9" />
+    <PackageReference Include="ModelContextProtocol" Version="1.4.0" />
+    <PackageReference Include="YamlDotNet" Version="18.1.0" />
+  </ItemGroup>
+
+</Project>
