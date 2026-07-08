@@ -1,0 +1,13 @@
+**/bin/
+**/obj/
+TestResults/
+artifacts/
+nupkg/
+.git/
+.github/
+.githooks/
+.idea/
+.vs/
+site/
+docs/
+*.user
