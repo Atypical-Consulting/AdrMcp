@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AdrMcp — Every architectural decision, on the record</title>
+<meta name="description" content="AdrMcp is a .NET 10 MCP server that turns a folder of Markdown Architectural Decision Records into live tools your AI assistant can use: search, author, validate, link, and trace decisions.">
+<meta property="og:title" content="AdrMcp — Every architectural decision, on the record">
+<meta property="og:description" content="A .NET 10 MCP server for Architectural Decision Records: navigate, author, validate, and analyze decisions on disk.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b1622'/%3E%3Crect x='4.5' y='4.5' width='23' height='23' rx='4.5' fill='none' stroke='%23f4b942' stroke-width='2'/%3E%3Ctext x='16' y='21' font-family='monospace' font-size='12' font-weight='700' fill='%23f4b942' text-anchor='middle'%3EADR%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0b1622;
+    --ink-2: #0e1d2e;
+    --panel: #13263c;
+    --panel-2: #162c46;
+    --line: #244567;
+    --line-soft: #1a3450;
+    --paper: #e9f1fb;
+    --muted: #90a7c4;
+    --muted-2: #6f88a6;
+    --stamp: #f4b942;
+    --stamp-deep: #d99a1c;
+    --ok: #4bd18a;
+    --slate: #7f95b3;
+    --red: #e0685f;
+
+    --font-display: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Code', Consolas, monospace;
+
+    --container: 1140px;
+    --radius: 14px;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background-color: var(--ink);
+    background-image:
+      linear-gradient(var(--line-soft) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px);
+    background-size: 46px 46px;
+    background-position: center top;
+    color: var(--paper);
+    font-family: var(--font-display);
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* dim the grid with an overlay so content stays legible */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(120% 90% at 78% -5%, rgba(244,185,66,.10), transparent 55%),
+                linear-gradient(180deg, rgba(11,22,34,.72), rgba(11,22,34,.94));
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrap { max-width: var(--container); margin-inline: auto; padding-inline: clamp(1.25rem, 4vw, 2rem); }
+  main, header, footer { position: relative; z-index: 1; }
+
+  a { color: inherit; text-decoration: none; }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: .74rem;
+    letter-spacing: .24em;
+    text-transform: uppercase;
+    color: var(--stamp);
+    display: inline-flex;
+    align-items: center;
+    gap: .6rem;
+    margin: 0 0 1.1rem;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 26px; height: 1px;
+    background: var(--stamp);
+    opacity: .7;
+  }
+
+  h1, h2, h3 { margin: 0; font-weight: 700; letter-spacing: -.02em; line-height: 1.05; }
+
+  .mono { font-family: var(--font-mono); }
+
+  /* ---------- nav ---------- */
+  header {
+    position: sticky; top: 0; z-index: 20;
+    backdrop-filter: blur(9px);
+    background: rgba(11,22,34,.7);
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .nav { display: flex; align-items: center; justify-content: space-between; height: 68px; }
+  .brand { display: flex; align-items: center; gap: .7rem; font-weight: 700; letter-spacing: -.01em; }
+  .brand .mark {
+    width: 30px; height: 30px; border-radius: 8px;
+    border: 2px solid var(--stamp);
+    display: grid; place-items: center;
+    font-family: var(--font-mono); font-size: .62rem; font-weight: 700; color: var(--stamp);
+  }
+  .nav-links { display: flex; align-items: center; gap: 2rem; }
+  .nav-links a.navlink {
+    font-family: var(--font-mono); font-size: .82rem; letter-spacing: .04em; color: var(--muted);
+    transition: color .18s ease;
+  }
+  .nav-links a.navlink:hover { color: var(--paper); }
+  .nav-gh {
+    font-family: var(--font-mono); font-size: .82rem;
+    border: 1px solid var(--line); border-radius: 9px; padding: .5rem .85rem;
+    color: var(--paper); transition: border-color .18s, background .18s;
+  }
+  .nav-gh:hover { border-color: var(--stamp); background: rgba(244,185,66,.08); }
+
+  /* ---------- hero ---------- */
+  .hero { padding: clamp(3.5rem, 8vw, 6.5rem) 0 clamp(2.5rem, 5vw, 4rem); }
+  .hero-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: clamp(2rem, 5vw, 4rem); align-items: center; }
+
+  h1.headline {
+    font-size: clamp(2.6rem, 5.6vw, 4.5rem);
+    letter-spacing: -.035em;
+    line-height: 1.0;
+  }
+  h1.headline .accent { color: var(--stamp); }
+  .lead { color: var(--muted); font-size: clamp(1.05rem, 1.6vw, 1.2rem); margin: 1.5rem 0 2rem; max-width: 34ch; }
+
+  .cmd {
+    display: flex; align-items: center; gap: .75rem;
+    background: var(--ink-2);
+    border: 1px solid var(--line);
+    border-radius: 11px;
+    padding: .8rem .95rem;
+    font-family: var(--font-mono);
+    font-size: .9rem;
+    max-width: 27rem;
+  }
+  .cmd .prompt { color: var(--stamp); }
+  .cmd code { color: var(--paper); overflow-x: auto; white-space: nowrap; }
+  .cmd button {
+    margin-left: auto; flex: none;
+    background: transparent; border: 1px solid var(--line); border-radius: 7px;
+    color: var(--muted); font-family: var(--font-mono); font-size: .72rem;
+    padding: .35rem .55rem; cursor: pointer; transition: all .18s;
+  }
+  .cmd button:hover { color: var(--ink); background: var(--stamp); border-color: var(--stamp); }
+
+  .cta-row { display: flex; flex-wrap: wrap; gap: .8rem; margin-top: 1.6rem; }
+  .btn {
+    display: inline-flex; align-items: center; gap: .5rem;
+    font-family: var(--font-mono); font-size: .86rem; font-weight: 500;
+    padding: .8rem 1.2rem; border-radius: 10px; cursor: pointer;
+    transition: transform .16s ease, background .18s, border-color .18s;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn-primary { background: var(--stamp); color: #241a05; border: 1px solid var(--stamp); font-weight: 700; }
+  .btn-primary:hover { background: #ffca57; }
+  .btn-ghost { background: transparent; color: var(--paper); border: 1px solid var(--line); }
+  .btn-ghost:hover { border-color: var(--stamp); }
+
+  /* ---------- record card (signature) ---------- */
+  .record {
+    position: relative;
+    background: linear-gradient(160deg, var(--panel), var(--ink-2));
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1.5rem 1.5rem 1.4rem;
+    box-shadow: 0 30px 60px -30px rgba(0,0,0,.8), inset 0 1px 0 rgba(255,255,255,.03);
+  }
+  .record::after {
+    content: "0007-use-postgresql.md";
+    position: absolute; bottom: .85rem; right: 1.4rem;
+    font-family: var(--font-mono); font-size: .68rem; color: var(--muted-2);
+  }
+  .stamp {
+    position: absolute; top: -16px; right: 20px;
+    font-family: var(--font-mono); font-weight: 700; font-size: .72rem; letter-spacing: .18em;
+    color: var(--stamp);
+    border: 2px solid var(--stamp); border-radius: 7px;
+    padding: .4rem .7rem;
+    background: rgba(244,185,66,.07);
+    box-shadow: inset 0 0 0 2px rgba(244,185,66,.22);
+    transform: rotate(-7deg);
+  }
+  .fm { font-family: var(--font-mono); font-size: .82rem; line-height: 1.9; }
+  .fm .k { color: var(--muted-2); }
+  .fm .v { color: var(--paper); }
+  .fm .rule { height: 1px; background: var(--line-soft); margin: .7rem 0; }
+  .chip {
+    display: inline-block; font-family: var(--font-mono); font-size: .68rem;
+    padding: .12rem .5rem; border-radius: 999px; border: 1px solid var(--line);
+    color: var(--muted); margin-right: .3rem;
+  }
+  .chip.ok { color: var(--ok); border-color: rgba(75,209,138,.4); }
+  .record h3.rtitle { font-size: 1.12rem; letter-spacing: -.01em; margin: .2rem 0 .1rem; }
+  .sections { margin-top: .9rem; display: grid; gap: .4rem; }
+  .sections div {
+    font-family: var(--font-mono); font-size: .78rem; color: var(--muted);
+    padding-left: 1rem; position: relative;
+  }
+  .sections div::before { content: "##"; position: absolute; left: 0; color: var(--stamp-deep); }
+
+  /* ---------- ticker strip ---------- */
+  .strip { border-block: 1px solid var(--line-soft); background: rgba(9,18,28,.5); }
+  .strip .wrap { display: flex; flex-wrap: wrap; gap: 1.4rem 2.2rem; padding-block: 1.05rem; }
+  .strip span {
+    font-family: var(--font-mono); font-size: .8rem; color: var(--muted);
+    display: inline-flex; align-items: center; gap: .7rem;
+  }
+  .strip span::before { content: "◆"; color: var(--stamp); font-size: .6rem; }
+  .strip b { color: var(--paper); font-weight: 500; }
+
+  /* ---------- generic section ---------- */
+  section.band { padding: clamp(3.8rem, 8vw, 6.5rem) 0; }
+  .sec-head { max-width: 52ch; margin-bottom: 2.8rem; }
+  .sec-head h2 { font-size: clamp(1.85rem, 3.6vw, 2.7rem); }
+  .sec-head p { color: var(--muted); margin: 1rem 0 0; }
+
+  /* pillars */
+  .pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; }
+  .pillar {
+    border: 1px solid var(--line-soft); border-radius: var(--radius);
+    background: linear-gradient(180deg, rgba(19,38,60,.55), rgba(14,29,46,.35));
+    padding: 1.5rem;
+  }
+  .pillar .num { font-family: var(--font-mono); font-size: .74rem; color: var(--stamp); letter-spacing: .1em; }
+  .pillar h3 { font-size: 1.15rem; margin: .7rem 0 .5rem; letter-spacing: -.01em; }
+  .pillar p { color: var(--muted); font-size: .95rem; margin: 0; }
+
+  /* toolbox */
+  .tools { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.2rem; }
+  .toolcard {
+    border: 1px solid var(--line-soft); border-radius: var(--radius);
+    background: rgba(14,29,46,.5); padding: 1.5rem;
+  }
+  .toolcard header { position: static; background: none; border: none; height: auto; display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 1.1rem; backdrop-filter: none; }
+  .toolcard h3 { font-size: 1.05rem; }
+  .toolcard .kind { font-family: var(--font-mono); font-size: .68rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted-2); }
+  .toolcard ul { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+  .toolcard li { font-family: var(--font-mono); font-size: .84rem; color: var(--muted); display: flex; align-items: center; gap: .6rem; }
+  .toolcard li::before { content: "▸"; color: var(--stamp); font-size: .7rem; }
+  .toolcard li b { color: var(--paper); font-weight: 500; }
+  .toolcard li .kw { color: var(--muted-2); }
+  .write-note { margin-top: 2rem; font-family: var(--font-mono); font-size: .82rem; color: var(--muted); border-left: 2px solid var(--stamp); padding-left: 1rem; }
+
+  /* lifecycle */
+  .flow { display: flex; align-items: center; flex-wrap: wrap; gap: .55rem; font-family: var(--font-mono); }
+  .state {
+    padding: .55rem .95rem; border-radius: 9px; border: 1px solid var(--line);
+    font-size: .84rem; letter-spacing: .04em; background: rgba(14,29,46,.6);
+  }
+  .state.s-proposed { color: var(--stamp); border-color: rgba(244,185,66,.4); }
+  .state.s-accepted { color: var(--ok); border-color: rgba(75,209,138,.4); }
+  .state.s-superseded { color: var(--slate); border-color: rgba(127,149,179,.4); }
+  .state.s-deprecated { color: var(--muted); }
+  .state.s-rejected { color: var(--red); border-color: rgba(224,104,95,.4); }
+  .arrow { color: var(--muted-2); }
+  .flow-note { color: var(--muted); font-size: .95rem; margin-top: 1.3rem; max-width: 60ch; }
+
+  /* skills */
+  .skills { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; }
+  .skill {
+    border: 1px solid var(--line-soft); border-radius: var(--radius);
+    padding: 1.5rem; background: linear-gradient(180deg, rgba(19,38,60,.5), rgba(14,29,46,.3));
+  }
+  .skill .slug { font-family: var(--font-mono); font-size: .82rem; color: var(--stamp); }
+  .skill h3 { font-size: 1.1rem; margin: .55rem 0 .6rem; }
+  .skill p { color: var(--muted); font-size: .92rem; margin: 0 0 1rem; }
+  .skill .trig { font-family: var(--font-mono); font-size: .74rem; color: var(--muted-2); border-top: 1px dashed var(--line); padding-top: .8rem; }
+  .skill .trig em { color: var(--paper); font-style: normal; }
+
+  /* quickstart */
+  .qs { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+  .code {
+    border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden;
+    background: var(--ink-2);
+  }
+  .code .bar {
+    display: flex; align-items: center; gap: .55rem;
+    padding: .7rem 1rem; border-bottom: 1px solid var(--line-soft);
+    font-family: var(--font-mono); font-size: .74rem; color: var(--muted-2);
+  }
+  .code .bar .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--line); }
+  .code pre { margin: 0; padding: 1.1rem 1.2rem; overflow-x: auto; }
+  .code code { font-family: var(--font-mono); font-size: .84rem; line-height: 1.75; color: var(--paper); white-space: pre; }
+  .code .cm { color: var(--muted-2); }
+  .code .ky { color: var(--stamp); }
+  .code .st { color: var(--ok); }
+
+  /* footer */
+  footer { border-top: 1px solid var(--line-soft); padding: 3rem 0; margin-top: 2rem; }
+  .foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; }
+  .foot p { color: var(--muted-2); font-family: var(--font-mono); font-size: .78rem; margin: 0; }
+  .foot a { color: var(--muted); font-family: var(--font-mono); font-size: .8rem; }
+  .foot a:hover { color: var(--stamp); }
+
+  :focus-visible { outline: 2px solid var(--stamp); outline-offset: 3px; border-radius: 4px; }
+
+  @media (max-width: 900px) {
+    .hero-grid { grid-template-columns: 1fr; }
+    .record { order: -1; }
+    .pillars, .tools, .skills, .qs { grid-template-columns: 1fr; }
+    .nav-links a.navlink { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .stamp { animation: none !important; }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .stamp { animation: stampin .7s cubic-bezier(.2,1.3,.4,1) .35s both; }
+    @keyframes stampin {
+      0% { opacity: 0; transform: rotate(-7deg) scale(1.9); }
+      60% { opacity: 1; transform: rotate(-7deg) scale(.94); }
+      100% { transform: rotate(-7deg) scale(1); }
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a class="brand" href="#top"><span class="mark">ADR</span> AdrMcp</a>
+    <nav class="nav-links" aria-label="Primary">
+      <a class="navlink" href="#what">What it is</a>
+      <a class="navlink" href="#tools">Toolbox</a>
+      <a class="navlink" href="#lifecycle">Lifecycle</a>
+      <a class="navlink" href="#skills">Skills</a>
+      <a class="nav-gh" href="https://github.com/phmatray/AdrMcp">GitHub ↗</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <p class="eyebrow">MCP Server · .NET 10 · stdio</p>
+        <h1 class="headline">Every architectural decision, <span class="accent">on the record.</span></h1>
+        <p class="lead">AdrMcp turns a folder of Markdown decision records into live tools your AI assistant can use — search them, write them, validate them, and trace how one decision superseded another.</p>
+
+        <div class="cmd" role="group" aria-label="Install command">
+          <span class="prompt">$</span>
+          <code id="install">dotnet tool install -g AdrMcp</code>
+          <button id="copy" aria-label="Copy install command">copy</button>
+        </div>
+
+        <div class="cta-row">
+          <a class="btn btn-primary" href="#quickstart">Get started</a>
+          <a class="btn btn-ghost" href="https://github.com/phmatray/AdrMcp">View source ↗</a>
+        </div>
+      </div>
+
+      <!-- signature: the ADR record card -->
+      <div class="record reveal">
+        <div class="stamp">ACCEPTED</div>
+        <div class="fm">
+          <div><span class="k">id:</span> <span class="v">0007</span></div>
+          <div><span class="k">date:</span> <span class="v">2026-05-12</span></div>
+          <div><span class="k">tags:</span> <span class="chip">data</span><span class="chip">storage</span></div>
+          <div><span class="k">links:</span> <span class="v">supersedes → 0003</span></div>
+          <div class="rule"></div>
+        </div>
+        <h3 class="rtitle">Use PostgreSQL for persistence</h3>
+        <div class="sections">
+          <div>Context and Problem Statement</div>
+          <div>Considered Options</div>
+          <div>Decision Outcome</div>
+          <div>Consequences</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STRIP -->
+  <div class="strip">
+    <div class="wrap">
+      <span><b>18</b> tools</span>
+      <span><b>MADR 4.0</b> format</span>
+      <span><b>Preview</b> by default</span>
+      <span><b>Git-native</b> storage</span>
+      <span><b>Provider-based</b> code linking</span>
+      <span>Any <b>MCP client</b></span>
+    </div>
+  </div>
+
+  <!-- WHAT IT IS -->
+  <section class="band" id="what">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <p class="eyebrow">The record</p>
+        <h2>Decisions live next to the code, not in someone's memory.</h2>
+        <p>ADRs are plain Markdown files under <code class="mono">docs/adr/</code> — versioned in git, diff-able, and readable without any tooling. AdrMcp adds the layer that makes them queryable and writable from your assistant, so the reasoning behind a choice is captured when it's made and traceable years later.</p>
+      </div>
+      <div class="pillars">
+        <div class="pillar reveal">
+          <div class="num">MECHANICS</div>
+          <h3>The server does the bookkeeping</h3>
+          <p>Sequential numbering, frontmatter, slugs, bidirectional links, and lifecycle rules — handled, so a record is never malformed.</p>
+        </div>
+        <div class="pillar reveal">
+          <div class="num">SAFETY</div>
+          <h3>Nothing writes without a preview</h3>
+          <p>Every mutating tool returns a unified diff first. Pass <code class="mono">previewOnly=false</code> only when the change is what you meant.</p>
+        </div>
+        <div class="pillar reveal">
+          <div class="num">HISTORY</div>
+          <h3>Supersede, never overwrite</h3>
+          <p>Decisions change. AdrMcp records the replacement and links both ways, so the trail from old to current stays intact.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TOOLBOX -->
+  <section class="band" id="tools">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <p class="eyebrow">Toolbox</p>
+        <h2>Eighteen tools, four jobs.</h2>
+        <p>Grouped by what they do to the record — read it, write it, reason about it, or ship it.</p>
+      </div>
+      <div class="tools">
+        <div class="toolcard reveal">
+          <header><h3>Navigation</h3><span class="kind">read-only</span></header>
+          <ul>
+            <li><b>list_adrs</b> <span class="kw">— filter by status, tag, date</span></li>
+            <li><b>get_adr</b> <span class="kw">— one record, or just sections</span></li>
+            <li><b>search_adrs</b> <span class="kw">— lexical or semantic</span></li>
+            <li><b>get_adr_index</b> <span class="kw">— the decision log</span></li>
+            <li><b>find_related_adrs</b> <span class="kw">— links + chain</span></li>
+            <li><b>get_adr_graph</b> <span class="kw">— nodes and edges</span></li>
+          </ul>
+        </div>
+        <div class="toolcard reveal">
+          <header><h3>Authoring</h3><span class="kind">preview-first</span></header>
+          <ul>
+            <li><b>create_adr</b> <span class="kw">— from a MADR/Nygard template</span></li>
+            <li><b>update_adr</b> <span class="kw">— replace one section</span></li>
+            <li><b>set_status</b> <span class="kw">— lifecycle-enforced</span></li>
+            <li><b>supersede_adr</b> <span class="kw">— replace + link, one call</span></li>
+            <li><b>link_adrs</b> <span class="kw">— typed, bidirectional</span></li>
+          </ul>
+        </div>
+        <div class="toolcard reveal">
+          <header><h3>Intelligence</h3><span class="kind">analysis</span></header>
+          <ul>
+            <li><b>validate_adr</b> <span class="kw">— structure + link integrity</span></li>
+            <li><b>detect_conflicts</b> <span class="kw">— overlapping decisions</span></li>
+            <li><b>find_stale_adrs</b> <span class="kw">— broken code refs</span></li>
+            <li><b>coverage_report</b> <span class="kw">— gaps by area</span></li>
+            <li><b>suggest_adr_from_change</b> <span class="kw">— draft from a diff</span></li>
+          </ul>
+        </div>
+        <div class="toolcard reveal">
+          <header><h3>Utility</h3><span class="kind">export</span></header>
+          <ul>
+            <li><b>render_index</b> <span class="kw">— browsable README</span></li>
+            <li><b>diff_adr</b> <span class="kw">— compare two records</span></li>
+          </ul>
+        </div>
+      </div>
+      <p class="write-note">Writes are preview-by-default. Every authoring and utility tool takes <span class="mono">previewOnly</span> (true by default) and returns the diff of the intended change before anything touches disk.</p>
+    </div>
+  </section>
+
+  <!-- LIFECYCLE -->
+  <section class="band" id="lifecycle">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <p class="eyebrow">Lifecycle</p>
+        <h2>A status a record can't skip.</h2>
+        <p>The server enforces the transitions, so a decision can't quietly jump from a draft to retired without passing through the states in between.</p>
+      </div>
+      <div class="flow reveal">
+        <span class="state s-proposed">proposed</span>
+        <span class="arrow">→</span>
+        <span class="state s-accepted">accepted</span>
+        <span class="arrow">→</span>
+        <span class="state s-deprecated">deprecated</span>
+        <span class="arrow">/</span>
+        <span class="state s-superseded">superseded</span>
+      </div>
+      <div class="flow reveal" style="margin-top:.7rem;">
+        <span class="state s-proposed">proposed</span>
+        <span class="arrow">→</span>
+        <span class="state s-rejected">rejected</span>
+      </div>
+      <p class="flow-note">Superseding creates the replacement as <span class="mono">accepted</span>, flips the original to <span class="mono">superseded</span>, and writes the <span class="mono">supersedes</span> / <span class="mono">superseded-by</span> links between them — in a single call.</p>
+    </div>
+  </section>
+
+  <!-- SKILLS -->
+  <section class="band" id="skills">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <p class="eyebrow">The craft</p>
+        <h2>Skills that supply the judgment the tools don't.</h2>
+        <p>The server provides the mechanics. Three Claude Code skills add the taste — when a decision is worth recording, and whether it's framed honestly.</p>
+      </div>
+      <div class="skills">
+        <div class="skill reveal">
+          <div class="slug">adr-author</div>
+          <h3>Write it well</h3>
+          <p>Decides whether a decision warrants a record, then frames a sharp Context, Decision, and honest Consequences.</p>
+          <div class="trig">triggers on <em>"record this decision"</em></div>
+        </div>
+        <div class="skill reveal">
+          <div class="slug">adr-review</div>
+          <h3>Hold it up to the light</h3>
+          <p>Structural and substantive critique against a rubric — is the decision falsifiable, are the alternatives real?</p>
+          <div class="trig">triggers on <em>"review this ADR"</em></div>
+        </div>
+        <div class="skill reveal">
+          <div class="slug">adr-supersede</div>
+          <h3>Retire it correctly</h3>
+          <p>Picks the right lifecycle move and preserves history instead of editing the past.</p>
+          <div class="trig">triggers on <em>"we changed our mind"</em></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUICKSTART -->
+  <section class="band" id="quickstart">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <p class="eyebrow">Quick start</p>
+        <h2>Install, then point your client at it.</h2>
+        <p>Runs as a local stdio process your MCP client launches — no port, no server to host.</p>
+      </div>
+      <div class="qs">
+        <div class="code reveal">
+          <div class="bar"><span class="dot"></span> shell</div>
+<pre><code><span class="cm"># as a global tool</span>
+dotnet tool install -g AdrMcp
+adr-mcp --adr-root ./docs/adr
+
+<span class="cm"># or from source</span>
+dotnet run --project AdrMcp -- \
+  --adr-root ./docs/adr</code></pre>
+        </div>
+        <div class="code reveal">
+          <div class="bar"><span class="dot"></span> mcp client config</div>
+<pre><code>{
+  <span class="ky">"mcpServers"</span>: {
+    <span class="ky">"adr"</span>: {
+      <span class="ky">"command"</span>: <span class="st">"adr-mcp"</span>,
+      <span class="ky">"args"</span>: [
+        <span class="st">"--adr-root"</span>, <span class="st">"docs/adr"</span>,
+        <span class="st">"--repo-root"</span>, <span class="st">"."</span>
+      ]
+    }
+  }
+}</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <p>AdrMcp · MIT · built on the Model Context Protocol</p>
+    <div style="display:flex; gap:1.5rem;">
+      <a href="https://github.com/phmatray/AdrMcp">Source</a>
+      <a href="https://github.com/phmatray/AdrMcp#tools">Docs</a>
+      <a href="https://modelcontextprotocol.io">MCP ↗</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // copy install command
+  (function () {
+    var btn = document.getElementById('copy');
+    var src = document.getElementById('install');
+    if (btn && src && navigator.clipboard) {
+      btn.addEventListener('click', function () {
+        navigator.clipboard.writeText(src.textContent.trim()).then(function () {
+          var t = btn.textContent; btn.textContent = 'copied ✓';
+          setTimeout(function () { btn.textContent = t; }, 1600);
+        });
+      });
+    }
+  })();
+</script>
+
+</body>
+</html>
