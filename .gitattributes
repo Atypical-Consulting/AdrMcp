@@ -1,0 +1,12 @@
+# Normalize all text files to LF in the repository and on checkout (every platform).
+# This keeps the shell hook in .githooks/ and the YAML workflows LF-clean, so they run
+# correctly on Linux CI even when cloned on Windows.
+* text=auto eol=lf
+
+# Explicitly keep the git hook as LF — a CRLF shebang line breaks /bin/sh.
+.githooks/pre-commit text eol=lf
+
+# Binary assets (none tracked yet, but declare intent).
+*.png binary
+*.jpg binary
+*.ico binary
