@@ -1,0 +1,18 @@
+## .NET build output
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+*.user
+
+## Rider / VS
+.idea/
+.vs/
+
+## Test / coverage
+[Tt]est[Rr]esults/
+*.coverage
+coverage*.json
+
+## NuGet
+*.nupkg
