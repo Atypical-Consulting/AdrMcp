@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/Atypical-Consulting/AdrMcp/compare/v0.1.0...v0.2.0) (2026-07-09)
+
+
+### Features
+
+* read frontmatter-less classic Nygard ADRs by filename convention ([#8](https://github.com/Atypical-Consulting/AdrMcp/issues/8)) ([f8bd0f7](https://github.com/Atypical-Consulting/AdrMcp/commit/f8bd0f7a3333477a407cb7adf2e07320a17ed115))
+
 ## 0.1.0 (2026-07-08)
 
 
