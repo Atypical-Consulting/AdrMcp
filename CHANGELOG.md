@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/Atypical-Consulting/AdrMcp/compare/v0.2.0...v0.2.1) (2026-07-09)
+
+
+### Bug Fixes
+
+* shorten MCP Registry description under the 100-char limit ([#11](https://github.com/Atypical-Consulting/AdrMcp/issues/11)) ([1561598](https://github.com/Atypical-Consulting/AdrMcp/commit/1561598915b010427125168fa84be1b13362a4b0))
+
 ## [0.2.0](https://github.com/Atypical-Consulting/AdrMcp/compare/v0.1.0...v0.2.0) (2026-07-09)
 
 
