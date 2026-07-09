@@ -26,8 +26,12 @@ public sealed class AdrRepositoryService : IAdrRepository
     private static readonly Regex LegacyHtmlComment =
         new(@"<!--.*?-->", RegexOptions.Singleline | RegexOptions.Compiled);
 
-    private static readonly Regex LegacySupersededBy =
-        new(@"superseded\s+by\s*(?:\[(?<num>\d+)\]|#?(?<num2>\d+))",
+    // Matches a "Superseded by ..." mention anywhere in the Status section (adr-tools keeps
+    // the original status word, e.g. "Accepted", as its own line and appends this note on a
+    // later line), then pulls the target ADR number out of whatever the link text looks like:
+    // "[5]", "[5. Title]", "[ADR-0005]", or "[0005-slug]".
+    private static readonly Regex LegacySupersededByNote =
+        new(@"superseded\s+by\D*?(?:\[(?:ADR-)?0*(?<num>\d+)|#?(?<num2>\d+))",
             RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     private static readonly ISerializer YamlSerializer = new SerializerBuilder()
@@ -174,9 +178,9 @@ public sealed class AdrRepositoryService : IAdrRepository
         var fileName = Path.GetFileNameWithoutExtension(path);
         var fnMatch = LegacyFileName.Match(fileName);
         if (!fnMatch.Success) return null;
+        if (!int.TryParse(fnMatch.Groups["id"].Value, out var id)) return null;
 
         var body = text.Replace("\r\n", "\n").TrimEnd() + "\n";
-        var id = int.Parse(fnMatch.Groups["id"].Value);
         var slug = fnMatch.Groups["slug"].Value;
 
         var rawTitle = MarkdownSections.ExtractTitle(body);
@@ -208,13 +212,16 @@ public sealed class AdrRepositoryService : IAdrRepository
         if (string.IsNullOrWhiteSpace(statusSection)) return (AdrStatus.Proposed, new());
 
         var cleaned = LegacyHtmlComment.Replace(statusSection, "").Trim();
-        var firstLine = cleaned
+        var lines = cleaned
             .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .FirstOrDefault() ?? "";
+            .ToList();
+        var firstLine = lines.FirstOrDefault() ?? "";
 
-        var supersededMatch = LegacySupersededBy.Match(firstLine);
-        if (supersededMatch.Success)
+        foreach (var line in lines)
         {
+            var supersededMatch = LegacySupersededByNote.Match(line);
+            if (!supersededMatch.Success) continue;
+
             var targetText = supersededMatch.Groups["num"].Success
                 ? supersededMatch.Groups["num"].Value
                 : supersededMatch.Groups["num2"].Value;

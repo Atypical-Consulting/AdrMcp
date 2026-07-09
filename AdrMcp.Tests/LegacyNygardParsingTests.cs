@@ -129,4 +129,31 @@ public class LegacyNygardParsingTests
         Assert.Contains("## Decision", raw);
         Assert.Contains("We will do the thing.", raw);
     }
+
+    [Fact]
+    public void Filename_id_overflow_is_skipped_instead_of_crashing_loadall()
+    {
+        using var env = new TestEnv();
+        File.WriteAllText(Path.Combine(env.Root, "99999999999-overflow.md"), ClassicAdr);
+
+        var all = env.Repo.LoadAll(); // must not throw
+
+        Assert.Empty(all);
+    }
+
+    [Fact]
+    public void Superseded_by_note_on_a_later_status_line_with_titled_link_is_recognized()
+    {
+        using var env = new TestEnv();
+        var realAdrToolsStyle = ClassicAdr.Replace(
+            "Accepted",
+            "Accepted\n\nSuperseded by [5. Use Elasticsearch](0005-use-elasticsearch.md)");
+        File.WriteAllText(Path.Combine(env.Root, "0001-record-architecture-decisions.md"), realAdrToolsStyle);
+
+        var adr = env.Repo.Find("1");
+
+        Assert.NotNull(adr);
+        Assert.Equal(AdrStatus.Superseded, adr!.Status);
+        Assert.Contains(adr.Links, l => l.Type == AdrLinkType.SupersededBy && l.TargetId == 5);
+    }
 }
