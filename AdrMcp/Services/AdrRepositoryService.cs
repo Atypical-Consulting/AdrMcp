@@ -14,6 +14,22 @@ public sealed class AdrRepositoryService : IAdrRepository
         new(@"^﻿?---\s*\r?\n(?<yaml>.*?)\r?\n---\s*\r?\n?(?<body>.*)$",
             RegexOptions.Singleline | RegexOptions.Compiled);
 
+    private static readonly Regex LegacyFileName =
+        new(@"^(?<id>\d+)-(?<slug>.+)$", RegexOptions.Compiled);
+
+    private static readonly Regex LegacyDateLine =
+        new(@"(?m)^[ \t]*Date:[ \t]*(?<date>\d{4}-\d{2}-\d{2})[ \t]*$", RegexOptions.Compiled);
+
+    private static readonly Regex LegacyTitleNumberPrefix =
+        new(@"^(?<num>\d+)\.\s*(?<title>.+)$", RegexOptions.Compiled);
+
+    private static readonly Regex LegacyHtmlComment =
+        new(@"<!--.*?-->", RegexOptions.Singleline | RegexOptions.Compiled);
+
+    private static readonly Regex LegacySupersededBy =
+        new(@"superseded\s+by\s*(?:\[(?<num>\d+)\]|#?(?<num2>\d+))",
+            RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
     private static readonly ISerializer YamlSerializer = new SerializerBuilder()
         .WithNamingConvention(UnderscoredNamingConvention.Instance)
         .ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull | DefaultValuesHandling.OmitEmptyCollections)
@@ -113,7 +129,7 @@ public sealed class AdrRepositoryService : IAdrRepository
     {
         var text = File.ReadAllText(path);
         var m = Frontmatter.Match(text);
-        if (!m.Success) return null;
+        if (!m.Success) return TryParseLegacyNygard(path, text);
 
         FrontmatterDto dto;
         try { dto = YamlDeserializer.Deserialize<FrontmatterDto>(m.Groups["yaml"].Value) ?? new FrontmatterDto(); }
@@ -145,6 +161,70 @@ public sealed class AdrRepositoryService : IAdrRepository
             Body = body,
             FilePath = path
         };
+    }
+
+    /// <summary>
+    /// Fallback for classic Nygard-style ADRs (no YAML frontmatter): title/date/status are
+    /// recovered from the body text. Only fires for files matching the conventional
+    /// <c>NNNN-slug.md</c> naming — anything else (README.md, template.md, unrelated notes)
+    /// still returns null, unchanged from prior behavior.
+    /// </summary>
+    private static Adr? TryParseLegacyNygard(string path, string text)
+    {
+        var fileName = Path.GetFileNameWithoutExtension(path);
+        var fnMatch = LegacyFileName.Match(fileName);
+        if (!fnMatch.Success) return null;
+
+        var body = text.Replace("\r\n", "\n").TrimEnd() + "\n";
+        var id = int.Parse(fnMatch.Groups["id"].Value);
+        var slug = fnMatch.Groups["slug"].Value;
+
+        var rawTitle = MarkdownSections.ExtractTitle(body);
+        var titleMatch = LegacyTitleNumberPrefix.Match(rawTitle);
+        var title = titleMatch.Success ? titleMatch.Groups["title"].Value.Trim() : rawTitle;
+
+        var preamble = body.Split("\n##", 2)[0];
+        var dateMatch = LegacyDateLine.Match(preamble);
+        var date = dateMatch.Success && DateOnly.TryParse(dateMatch.Groups["date"].Value, out var d)
+            ? d : default;
+
+        var (status, links) = ParseLegacyStatus(MarkdownSections.GetSection(body, "Status"));
+
+        return new Adr
+        {
+            Id = id,
+            Slug = slug,
+            Title = string.IsNullOrWhiteSpace(title) ? slug : title,
+            Status = status,
+            Date = date,
+            Links = links,
+            Body = body,
+            FilePath = path
+        };
+    }
+
+    private static (AdrStatus Status, List<AdrLink> Links) ParseLegacyStatus(string? statusSection)
+    {
+        if (string.IsNullOrWhiteSpace(statusSection)) return (AdrStatus.Proposed, new());
+
+        var cleaned = LegacyHtmlComment.Replace(statusSection, "").Trim();
+        var firstLine = cleaned
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .FirstOrDefault() ?? "";
+
+        var supersededMatch = LegacySupersededBy.Match(firstLine);
+        if (supersededMatch.Success)
+        {
+            var targetText = supersededMatch.Groups["num"].Success
+                ? supersededMatch.Groups["num"].Value
+                : supersededMatch.Groups["num2"].Value;
+            var links = int.TryParse(targetText, out var target)
+                ? new List<AdrLink> { new AdrLink(AdrLinkType.SupersededBy, target) }
+                : new List<AdrLink>();
+            return (AdrStatus.Superseded, links);
+        }
+
+        return (EnumMap.ParseStatus(firstLine), new());
     }
 
     // ---- YAML DTOs (UnderscoredNamingConvention maps CodeRefs -> code_refs, etc.) ----
