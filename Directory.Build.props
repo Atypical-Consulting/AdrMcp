@@ -8,11 +8,11 @@
   <!-- Version + package metadata, shared so the packed tool is consistent.
        <Version> and <InformationalVersion> are bumped automatically by release-please from
        Conventional Commits (see release-please-config.json) — don't hand-edit them, and don't
-       remove the x-release-please-version markers. 0.2.0 is the pre-first-release baseline;
+       remove the x-release-please-version markers. 0.2.1 is the pre-first-release baseline;
        nothing publishes off a bare push to dev, only a release-please tag does. -->
   <PropertyGroup>
-    <Version>0.2.0</Version> <!-- x-release-please-version -->
-    <InformationalVersion>0.2.0</InformationalVersion> <!-- x-release-please-version -->
+    <Version>0.2.1</Version> <!-- x-release-please-version -->
+    <InformationalVersion>0.2.1</InformationalVersion> <!-- x-release-please-version -->
     <Authors>Atypical Consulting SRL</Authors>
     <Company>Atypical Consulting</Company>
     <Copyright>Copyright (c) 2026 Atypical Consulting SRL</Copyright>
