@@ -98,4 +98,35 @@ public class LegacyNygardParsingTests
         Assert.Equal(default, adr!.Date);
         Assert.Equal(AdrStatus.Proposed, adr.Status);
     }
+
+    [Fact]
+    public void Validate_adr_reports_no_missing_section_errors_for_a_legacy_file()
+    {
+        using var env = new TestEnv();
+        File.WriteAllText(Path.Combine(env.Root, "0001-record-architecture-decisions.md"), ClassicAdr);
+        var adr = env.Repo.Find("1")!;
+
+        var result = env.Validator.Validate(adr, env.Repo.LoadAll());
+
+        Assert.DoesNotContain(result.Issues, i => i.Message.Contains("Missing required section"));
+    }
+
+    [Fact]
+    public void Set_status_upgrades_a_legacy_file_to_frontmatter_while_preserving_its_body()
+    {
+        using var env = new TestEnv();
+        var path = Path.Combine(env.Root, "0001-record-architecture-decisions.md");
+        File.WriteAllText(path, ClassicAdr);
+        var adr = env.Repo.Find("1")!;
+        Assert.Equal(AdrStatus.Accepted, adr.Status); // sanity: legacy parse worked
+
+        // Accepted -> Deprecated is a legal transition (AdrLifecycle).
+        env.Authoring.SetStatus("1", "deprecated", previewOnly: false);
+
+        var raw = File.ReadAllText(path);
+        Assert.StartsWith("---", raw);
+        Assert.Contains("status: deprecated", raw);
+        Assert.Contains("## Decision", raw);
+        Assert.Contains("We will do the thing.", raw);
+    }
 }
