@@ -43,6 +43,17 @@ and slugged (e.g. `0000-record-architecture-decisions.md`). The default
 authoring format is **MADR 4.0**; a **Nygard** template is also supported. An
 index can be regenerated with `render_index`.
 
+**Reading legacy corpora.** `AdrRepositoryService` also reads classic
+Nygard-format files that have no YAML frontmatter at all — the original
+Nygard/adr-tools convention (title/date/status/context/decision/consequences,
+nothing else). This only kicks in for files matching the `NNNN-slug.md`
+naming; title/date/status are recovered from the body (a `Date: YYYY-MM-DD`
+line, the `## Status` section — including a `Superseded by [NNNN](...)` line,
+which also records the structured supersession link). The first mutating tool
+call against such a file upgrades it to the frontmatter format on save, since
+writes are preview-by-default and the added frontmatter is a visible diff
+before it's applied.
+
 ## Conventions
 
 - **Preview-by-default writes.** Any tool that creates or changes files
