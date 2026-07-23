@@ -2,6 +2,29 @@
 
 # AdrMcp
 
+<!-- portfolio-toc:start -->
+
+## Table of Contents
+
+- [Features](#features)
+- [The problem](#the-problem)
+- [The solution](#the-solution)
+- [Storage & format](#storage--format)
+- [Tools](#tools)
+- [Configuration](#configuration)
+- [Run](#run)
+- [Usage](#usage)
+- [Claude skills](#claude-skills)
+- [Develop](#develop)
+- [Continuous integration](#continuous-integration)
+- [Project layout](#project-layout)
+- [Tech Stack](#tech-stack)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
+
+<!-- portfolio-toc:end -->
+
+
 <!-- mcp-name: io.github.Atypical-Consulting/adr-mcp -->
 
 **Every architectural decision, on the record** — an MCP server that turns a folder of Markdown
