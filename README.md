@@ -189,6 +189,21 @@ AdrMcp/
 
 ---
 
+<!-- portfolio-techstack:start -->
+
+## Tech Stack
+
+- **.NET 10**
+- ModelContextProtocol
+- xunit
+- xunit.runner.visualstudio
+- DiffPlex
+- Markdig
+- Microsoft.Extensions.Hosting
+- YamlDotNet
+
+<!-- portfolio-techstack:end -->
+
 <!-- portfolio-sections:start -->
 
 ## Contributing
