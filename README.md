@@ -17,6 +17,16 @@ ADRs into live tools your AI agent can use: search, author, validate, link, and 
 
 ![AdrMcp — Every architectural decision, on the record](https://atypical-consulting.github.io/AdrMcp/og.png)
 
+## Features
+
+- **Read & search ADRs** — `list_adrs`, `get_adr`, `search_adrs` (lexical or semantic), and `get_adr_index` for the full decision timeline.
+- **Author from a template** — `create_adr` drafts MADR- or Nygard-format ADRs; `update_adr` replaces or appends a single section.
+- **Lifecycle-aware transitions** — `set_status` enforces the ADR lifecycle; `supersede_adr` creates the replacement and marks/links the old one superseded in a single call.
+- **Relationship graph & staleness detection** — `find_related_adrs` / `get_adr_graph` expose links and supersession chains; `find_stale_adrs` flags ADRs whose `code_refs` no longer resolve in the codebase.
+- **Conflict & coverage analysis** — `detect_conflicts` surfaces contradictory accepted decisions; `coverage_report` highlights ADR coverage gaps by architectural area.
+- **Preview-by-default writes** — every mutating tool defaults to `previewOnly: true` and returns a unified diff before anything touches disk.
+- **Ships as a dotnet tool, NuGet package, and Docker image**, plus three bundled Claude Code skills (`adr-author`, `adr-review`, `adr-supersede`) for the judgment layer on top of the raw tools.
+
 ## The problem
 
 Architectural decisions get made in Slack threads, PR comments, and someone's head — then the
@@ -142,6 +152,31 @@ docker build -t adr-mcp .
 docker run --rm -i -v "$PWD:/workspace" adr-mcp --adr-root /workspace/docs/adr
 ```
 
+## Usage
+
+Once `adr-mcp` is registered as an MCP server, an agent calls its tools directly. A typical
+read-then-write flow:
+
+```jsonc
+// "What ADRs do we have about data storage?"
+list_adrs({ "tag": "data" })
+// → [{ "id": 5, "title": "Use PostgreSQL for persistence", "status": "accepted", "tags": ["data"] }]
+
+// "Draft a decision for switching to gRPC internally" — nothing is written yet
+create_adr({
+  "title": "Adopt gRPC for internal services",
+  "template": "madr",
+  "previewOnly": true
+})
+// → unified diff of the new docs/adr/0006-adopt-grpc-for-internal-services.md
+
+// Once the content looks right, write it for real
+create_adr({ "title": "Adopt gRPC for internal services", "template": "madr", "previewOnly": false })
+
+// Later, retire an old decision in favor of a new one, preserving history
+supersede_adr({ "oldId": 2, "newTitle": "Replace REST gateway with gRPC", "previewOnly": false })
+```
+
 ## Claude skills
 
 Three project skills under `.claude/skills/` add the judgment/workflow layer on top of the
@@ -203,6 +238,16 @@ AdrMcp/
 - YamlDotNet
 
 <!-- portfolio-techstack:end -->
+
+## Roadmap
+
+- [ ] Real embedding-backed semantic search for `search_adrs` / `detect_conflicts` (beyond term-vector similarity)
+- [ ] Roslyn-based `ICodeLinkProvider` for deep C# symbol resolution in `find_stale_adrs`
+- [ ] Additional ADR templates beyond MADR/Nygard (e.g. Y-statements)
+- [ ] Editor extension (VS Code / JetBrains) to browse and visualize the decision graph
+- [ ] Broaden the CI coverage gate and publish to additional package registries
+
+See the [open issues](https://github.com/Atypical-Consulting/AdrMcp/issues) for details and to propose new ideas.
 
 <!-- portfolio-sections:start -->
 
