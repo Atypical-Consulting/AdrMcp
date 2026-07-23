@@ -24,6 +24,27 @@
 
 <!-- portfolio-toc:end -->
 
+<!-- portfolio-getstarted:start -->
+
+## Getting Started
+
+### Prerequisites
+
+- [.NET SDK](https://dotnet.microsoft.com/download)
+
+### Run
+
+```bash
+git clone https://github.com/Atypical-Consulting/AdrMcp.git
+cd AdrMcp
+dotnet restore
+dotnet build
+dotnet run --project AdrMcp/AdrMcp.csproj
+```
+
+<!-- portfolio-getstarted:end -->
+
+
 
 <!-- mcp-name: io.github.Atypical-Consulting/adr-mcp -->
 
