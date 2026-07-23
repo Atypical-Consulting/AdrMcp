@@ -1,3 +1,5 @@
+![AdrMcp banner](.github/banner.png)
+
 # AdrMcp
 
 <!-- mcp-name: io.github.Atypical-Consulting/adr-mcp -->
